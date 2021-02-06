@@ -2,6 +2,27 @@
 
 use Illuminate\Support\Str;
 
+$env = getenv('APP_ENV');
+
+if ($env == 'production')
+{
+    $url = env('DATABASE_URL');
+    $parts = parse_url($url);
+
+    $host = $parts["host"];
+    $username = $parts["user"];
+    $password = $parts["pass"];
+    $database = substr($parts["path"], 1);
+
+}
+else
+{
+    $host = env('DB_HOST', '127.0.0.1');
+    $username = env('DB_USERNAME', 'forge');
+    $password = env('DB_PASSWORD', '');
+    $database = env('DB_DATABASE', 'forge');
+}
+
 return [
 
     /*
@@ -15,7 +36,7 @@ return [
     |
     */
 
-    'default' => env('DB_CONNECTION', 'mysql'),
+    'default' => env('DB_CONNECTION', 'pgsql'),
 
     /*
     |--------------------------------------------------------------------------
