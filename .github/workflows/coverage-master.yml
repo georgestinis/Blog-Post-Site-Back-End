@@ -42,7 +42,7 @@ jobs:
           ./vendor/bin/phpunit --coverage-clover clover.xml
           ./cc-test-reporter after-build --debug --exit-code $?
         env:
-          CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+          CC_TEST_REPORTER_ID: 6527e1a01e591ecb8edfc0bc29331b04ceea62523aac0c98a808436fadc1f777
           GIT_BRANCH: ${{ github.base_ref }}
           DB_PORT: ${{ job.services.postgres.ports[5432] }}
           DB_HOST: localhost
