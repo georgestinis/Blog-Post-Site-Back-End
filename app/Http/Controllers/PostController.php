@@ -86,39 +86,80 @@ class PostController extends Controller
     }
 
     /**
+     * @param  \Illuminate\Http\Request  $request
+     * @param  String  $slug
+     * @return \Illuminate\Http\Response
+     */
+    public function edit(Request $request, $slug)
+    {
+        $post = Post::where('slug', $slug)->first();
+        if($post && ($request->user()->id == $post->author_id || $request->user()->is_admin()))
+            return view('posts.edit')->with('post',$post);
+        return redirect('/')->withErrors('you have not sufficient permissions');
+    }
+
+    /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request)
     {
-        $post = Post::find($id);
-        if (is_null($post)) {
-            return response()->json(["error" => "Record not found"], 404);
+        $post_id = $request->input('post_id');
+        $post = Post::find($post_id);
+        if ($post && ($post->author_id == $request->user()->id || $request->user->is_admin())) {
+            $title = $request->input('title');
+            $slug = Str::slug($title);
+            
+            $duplicate = Post::where('slug', $slug)->first();
+            if ($duplicate) {
+                if ($duplicate->id != $post->id) {
+                    return redirect('edit/' . $post->slug)->withErrors('Title already exists.')->withInput();
+                }
+                else {
+                    $post->slug = $slug;
+                }
+            }
+
+            $post->title = $title;
+            $post->body = $request->input('body');
+
+            if ($request->has('save')) {
+                $post->active = 0;
+                $message = 'Post saved successfully';
+                $landing = 'edit/' . $post->slug;
+            }
+            else {
+                $post->active = 1;
+                $message = 'Post updated successfully';
+                $landing = $post->slug;
+            }
+
+            $post->save();
+            return redirect($landing)->withMessage($message);
         }
-
-        $post->update($request->all());
-
-        return response()->json($post, 200, ['Content-type'=> 'application/json; charset=utf-8'], JSON_UNESCAPED_UNICODE);
+        else {
+            return redirect('/')->withErrors('you have not sufficient permissions');
+        }
     }
 
     /**
      * Remove the specified resource from storage.
-     *
+     * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy($request, $id)
     {
         $post = Post::find($id);
-        if (is_null($post)) {
-            return response()->json(["error" => "Record not found"], 404);
+        if ($post && ($post->author_id == $request->user()->id || $request->user()->is_admin())) {
+            $post->delete();
+            $data['message'] = 'Post deleted Successfully';
         }
-
-        $post->delete();
-
-        return response()->json(null, 204);
+        else {
+            $data['errors'] = 'Invalid Operation. You have not sufficient permissions';
+        }
+        return redirect('/')->with($data);
     }
 }
