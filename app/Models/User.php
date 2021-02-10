@@ -55,7 +55,7 @@ class User extends Authenticatable
     // user has many comments
     public function posts() 
     {
-        return $this->hasMany('App\Post', 'author_id')
+        return $this->hasMany('App\Post', 'author_id');
     }
 
     public function can_post() 
