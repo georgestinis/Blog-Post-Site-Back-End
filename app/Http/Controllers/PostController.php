@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Http\Requests\PostFormRequest;
 use App\Http\Models\Post;
-use Validator;
+use App\Traits\PostTrait;
 
 class PostController extends Controller
 {
+    use PostTrait;
+    
     /**
      * Display a listing of the resource.
      *
@@ -109,34 +111,7 @@ class PostController extends Controller
         $post_id = $request->input('post_id');
         $post = Post::find($post_id);
         if ($post && ($post->author_id == $request->user()->id || $request->user->is_admin())) {
-            $title = $request->input('title');
-            $slug = Str::slug($title);
-            
-            $duplicate = Post::where('slug', $slug)->first();
-            if ($duplicate) {
-                if ($duplicate->id != $post->id) {
-                    return redirect('edit/' . $post->slug)->withErrors('Title already exists.')->withInput();
-                }
-                else {
-                    $post->slug = $slug;
-                }
-            }
-
-            $post->title = $title;
-            $post->body = $request->input('body');
-
-            if ($request->has('save')) {
-                $post->active = 0;
-                $message = 'Post saved successfully';
-                $landing = 'edit/' . $post->slug;
-            }
-            else {
-                $post->active = 1;
-                $message = 'Post updated successfully';
-                $landing = $post->slug;
-            }
-
-            $post->save();
+            $this->updatePost($request, $post);
             return redirect($landing)->withMessage($message);
         }
         else {
