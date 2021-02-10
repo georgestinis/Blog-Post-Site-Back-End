@@ -13,11 +13,11 @@ class Comment extends Model
 
     
     public function post(){
-        return $this->belongsTo('App\Post');
+        return $this->belongsTo('App\Models\Post', 'on_post');
     }
     
     // user who has commented
     public function user(){
-        return $this->belongsTo('App\User', 'from_user');
+        return $this->belongsTo('App\Models\User', 'from_user');
     }
 }
