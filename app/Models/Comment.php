@@ -9,13 +9,15 @@ class Comment extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['comment'];
+    protected $guarded = [];
 
+    
     public function post(){
-        return $this->belongsTo('App\Post');
+        return $this->belongsTo('App\Models\Post', 'on_post');
     }
-
+    
+    // user who has commented
     public function user(){
-        return $this->belongsTo('App\User');
+        return $this->belongsTo('App\Models\User', 'from_user');
     }
 }
